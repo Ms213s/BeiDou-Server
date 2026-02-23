@@ -2080,9 +2080,6 @@ public class World {
     }
 
     public void runCheckFishingSchedule() {
-        double[] fishingLikelihoods = Fishing.fetchFishingLikelihood();
-        double yearLikelihood = fishingLikelihoods[0], timeLikelihood = fishingLikelihoods[1];
-
         if (!fishingAttempters.isEmpty()) {
             List<Character> fishingAttemptersList;
 
@@ -2091,8 +2088,28 @@ public class World {
             }
 
             for (Character chr : fishingAttemptersList) {
-                int baitLevel = unregisterFisherPlayer(chr);
-                Fishing.doFishing(chr, baitLevel, yearLikelihood, timeLikelihood);
+                int ticketType = unregisterFisherPlayer(chr);
+                if (ticketType > 0) {
+                    org.gms.client.inventory.InventoryType invType = org.gms.constants.inventory.ItemConstants.getInventoryType(ticketType);
+                    if (chr.getInventory(invType).countById(ticketType) > 0) {
+                        org.gms.client.inventory.manipulator.InventoryManipulator.removeById(chr.getClient(), invType, ticketType, 1, true, true);
+                        org.gms.util.packets.Fishing.doFishing(chr, ticketType);
+                        
+                        if (org.gms.constants.inventory.ItemConstants.isFishingChair(chr.getChair())) {
+                            if (chr.getInventory(invType).countById(ticketType) > 0) {
+                                registerFisherPlayer(chr, ticketType);
+                            } else {
+                                String ticketName = ticketType == org.gms.constants.id.ItemId.HAPPY_TICKET ? "快乐百宝券" : "高级快乐百宝券";
+                                chr.dropMessage("券已用完，停止钓鱼！");
+                                chr.sitChair(-1);
+                            }
+                        }
+                    } else {
+                        String ticketName = ticketType == org.gms.constants.id.ItemId.HAPPY_TICKET ? "快乐百宝券" : "高级快乐百宝券";
+                        chr.dropMessage("券已用完，停止钓鱼！");
+                        chr.sitChair(-1);
+                    }
+                }
             }
         }
     }

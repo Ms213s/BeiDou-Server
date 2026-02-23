@@ -236,12 +236,11 @@ public class MapId {
     }
 
     // Fishing
-    private static final int ON_THE_WAY_TO_THE_HARBOR = 120010000;
-    private static final int PIER_ON_THE_BEACH = 251000100;
-    private static final int PEACEFUL_SHIP = 541010110;
+    public static final int ON_THE_WAY_TO_THE_HARBOR = 120010000;
+    public static final int PIER_ON_THE_BEACH = 251000100;
 
     public static boolean isFishingArea(int mapId) {
-        return mapId == ON_THE_WAY_TO_THE_HARBOR || mapId == PIER_ON_THE_BEACH || mapId == PEACEFUL_SHIP;
+        return mapId == ON_THE_WAY_TO_THE_HARBOR || mapId == PIER_ON_THE_BEACH;
     }
 
     // Wedding

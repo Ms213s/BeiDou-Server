@@ -6,7 +6,6 @@
 .github/*
 !.github/ISSUE_TEMPLATE/
 !.github/workflows/
-.vscode
 
 # build files
 /build/

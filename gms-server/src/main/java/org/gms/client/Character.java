@@ -5725,6 +5725,49 @@ public class Character extends AbstractCharacterObject {
                 this.getWorldServer().registerFisherPlayer(this, baitLevel);
     }
 
+    public boolean startFishingWithTicket() {
+        if (!GameConfig.getServerBoolean("use_fishing_system")) {
+            showHint("钓鱼系统未开启！");
+            return false;
+        }
+        
+        if (!MapId.isFishingArea(mapId)) {
+            showHint("请前往钓鱼地图！\\n#b普通钓鱼地图：#r120010000（去港口的路上）#k\\n#b高级钓鱼地图：#r251000100（海滩码头）");
+            return false;
+        }
+        
+        if (this.getPosition().getY() <= 0) {
+            showHint("位置不正确！");
+            return false;
+        }
+        
+        if (getLevel() < 30) {
+            showHint("你必须30级以上才能钓鱼！");
+            return false;
+        }
+        
+        int requiredTicket = 0;
+        String ticketName = "";
+        
+        if (mapId == MapId.ON_THE_WAY_TO_THE_HARBOR) {
+            requiredTicket = ItemId.HAPPY_TICKET;
+            ticketName = "快乐百宝券";
+        } else if (mapId == MapId.PIER_ON_THE_BEACH) {
+            requiredTicket = ItemId.ADVANCED_HAPPY_TICKET;
+            ticketName = "高级快乐百宝券";
+        } else {
+            return false;
+        }
+        
+        if (getInventory(org.gms.constants.inventory.ItemConstants.getInventoryType(requiredTicket)).countById(requiredTicket) <= 0) {
+            showHint("背包没有#r" + ticketName + "#k，无法钓鱼！\\n请先获取对应地图的券。");
+            return false;
+        }
+        
+        dropMessage("开始钓鱼，10秒后自动消耗" + ticketName + "并尝试钓取物品...");
+        return this.getWorldServer().registerFisherPlayer(this, requiredTicket);
+    }
+
     public void leaveMap() {
         releaseControlledMonsters();
         visibleMapObjects.clear();
@@ -6860,6 +6903,13 @@ public class Character extends AbstractCharacterObject {
                 if (chair.get() < 0) {
                     setChair(itemId);
                     getMap().broadcastMessage(this, PacketCreator.showChair(this.getId(), itemId), false);
+                    
+                    if (ItemConstants.isFishingChair(itemId)) {
+                        boolean success = startFishingWithTicket();
+                        if (!success) {
+                            unsitChairInternal();
+                        }
+                    }
                 }
                 enableActions();
             } else if (itemId >= 0) {    // sit on map chair
