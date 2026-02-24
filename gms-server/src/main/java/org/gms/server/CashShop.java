@@ -226,10 +226,19 @@ public class CashShop {
 
         public static ModifiedCashItemDO getItem(int sn) {
             ModifiedCashItemDO cashItemDO = items.get(sn);
-            if(cashItemDO == null) {
+            ModifiedCashItemDO dbItemDO = modifiedCashItems.get(sn);
+            
+            // 如果wz和数据库中都没有找到，返回null
+            if (cashItemDO == null && dbItemDO == null) {
                 return null;
             }
-            ModifiedCashItemDO dbItemDO = modifiedCashItems.get(sn);
+            
+            // 如果wz中没有，但数据库中有（这是用户新添加的商品）
+            if (cashItemDO == null && dbItemDO != null) {
+                return dbItemDO.clone();
+            }
+            
+            // wz中有商品，以wz为基础，数据库中的值覆盖
             ModifiedCashItemDO returnDo = cashItemDO.clone();
             if (dbItemDO != null) {
                 returnDo.setItemId(Optional.ofNullable(dbItemDO.getItemId()).orElse(cashItemDO.getItemId()));
@@ -259,16 +268,20 @@ public class CashShop {
 
         public static List<Item> getPackage(int itemId) {
             List<Item> cashPackage = new ArrayList<>();
-
-            for (int sn : packages.get(itemId)) {
-                cashPackage.add(getItem(sn).toItem());
+            List<Integer> snList = packages.get(itemId);
+            if (snList != null) {
+                for (int sn : snList) {
+                    ModifiedCashItemDO item = getItem(sn);
+                    if (item != null) {
+                        cashPackage.add(item.toItem());
+                    }
+                }
             }
-
             return cashPackage;
         }
 
         public static boolean isPackage(int itemId) {
-            return packages.containsKey(itemId);
+            return packages != null && packages.containsKey(itemId);
         }
 
     }

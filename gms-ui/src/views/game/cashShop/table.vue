@@ -35,7 +35,30 @@
       </a-space>
       <a-space>
         <a-button @click="loadData">搜索</a-button>
+        <a-button type="primary" @click="showAddForm">添加商品</a-button>
         <a-button type="primary" @click="showBatchForm">批量编辑</a-button>
+        <a-button
+          type="primary"
+          status="danger"
+          :disabled="selectedKeys.length === 0"
+          @click="handleBatchDelete"
+        >
+          批量删除
+        </a-button>
+        <a-button
+          :disabled="condition.isDbItem === true"
+          type="primary"
+          @click="changeDbItemFilter(true)"
+        >
+          数据库商品
+        </a-button>
+        <a-button
+          :disabled="condition.isDbItem === undefined"
+          type="primary"
+          @click="changeDbItemFilter(undefined)"
+        >
+          显示全部
+        </a-button>
       </a-space>
     </a-space>
     <a-table
@@ -94,7 +117,6 @@
           align="center"
           :width="80"
         />
-        <a-table-column title="Bonus" data-index="bonus" align="center" />
         <a-table-column
           title="有效期"
           data-index="period"
@@ -103,13 +125,6 @@
         >
           <template #cell="{ record }"> {{ record.period }} 天 </template>
         </a-table-column>
-        <a-table-column title="抵用券" data-index="maplePoint" align="center" />
-        <a-table-column title="金币" data-index="meso" align="center" />
-        <a-table-column
-          title="会员专属"
-          data-index="forPremiumUser"
-          align="center"
-        />
         <a-table-column
           title="性别"
           data-index="gender"
@@ -133,7 +148,7 @@
             <a-tag v-else color="red">待售</a-tag>
           </template>
         </a-table-column>
-        <a-table-column title="标签" align="center">
+        <a-table-column title="标签" align="center" :width="80">
           <template #cell="{ record }">
             <a-tag v-if="record.clz === 0" color="gold">NEW</a-tag>
             <a-tag v-else-if="record.clz === 1" color="green">SALE</a-tag>
@@ -141,20 +156,40 @@
             <a-tag v-else-if="record.clz === 3" color="blue">EVENT</a-tag>
           </template>
         </a-table-column>
-        <a-table-column title="Limit" data-index="limit" align="center" />
-        <a-table-column title="PbCash" data-index="pbCash" align="center" />
-        <a-table-column title="PbPoint" data-index="pbPoint" align="center" />
-        <a-table-column title="PbGift" data-index="pbGift" align="center" />
         <a-table-column
-          title="礼包合集"
-          data-index="packageSn"
+          title="PbCash"
+          data-index="pbCash"
           align="center"
+          :width="60"
+        />
+        <a-table-column
+          title="PbPoint"
+          data-index="pbPoint"
+          align="center"
+          :width="60"
+        />
+        <a-table-column
+          title="PbGift"
+          data-index="pbGift"
+          align="center"
+          :width="60"
         />
         <a-table-column title="操作">
           <template #cell="{ record }">
-            <a-button type="text" size="mini" @click="editClick(record)">
-              编辑
-            </a-button>
+            <a-space>
+              <a-button type="text" size="mini" @click="editClick(record)">
+                编辑
+              </a-button>
+              <a-button
+                v-if="record.isDbItem"
+                type="text"
+                size="mini"
+                status="danger"
+                @click="handleDelete(record)"
+              >
+                {{ record.isPureDbItem ? '删除' : '还原' }}
+              </a-button>
+            </a-space>
           </template>
         </a-table-column>
       </template>
@@ -163,12 +198,21 @@
       style="margin-top: 20px"
       :total="total"
       :current="condition.pageNo"
+      :page-size="condition.pageSize"
+      :page-size-options="[10, 20, 40, 60, 100]"
       show-total
       show-jumper
+      show-page-size
       @change="pageChange"
+      @page-size-change="pageSizeChange"
     />
   </a-card>
-  <cash-shop-form ref="cashShopFormRef" @load-data="loadData" />
+  <cash-shop-form
+    ref="cashShopFormRef"
+    :category-id="condition.id"
+    :subcategory-id="condition.subId"
+    @load-data="loadData"
+  />
   <a-modal
     v-model:visible="batchFormVisible"
     :ok-loading="loading"
@@ -189,11 +233,32 @@
             v-for="item of batchFormTypeOptions"
             :key="item.value"
             :value="item.value"
-            :label="item.value"
+            :label="item.label"
           />
         </a-select>
       </a-form-item>
-      <a-form-item label="值">
+      <a-form-item v-if="batchFormData.type === '上架状态'" label="状态">
+        <a-select v-model="batchFormData.value">
+          <a-option :value="1" label="上架" />
+          <a-option :value="0" label="待售" />
+        </a-select>
+      </a-form-item>
+      <a-form-item v-else-if="batchFormData.type === '性别'" label="性别">
+        <a-select v-model="batchFormData.value">
+          <a-option :value="0" label="男" />
+          <a-option :value="1" label="女" />
+          <a-option :value="2" label="通用" />
+        </a-select>
+      </a-form-item>
+      <a-form-item v-else-if="batchFormData.type === '标签'" label="标签">
+        <a-select v-model="batchFormData.value">
+          <a-option :value="0" label="NEW (新品)" />
+          <a-option :value="1" label="SALE (特卖)" />
+          <a-option :value="2" label="HOT (热卖)" />
+          <a-option :value="3" label="EVENT (活动)" />
+        </a-select>
+      </a-form-item>
+      <a-form-item v-else label="值">
         <a-input-number v-model="batchFormData.value" />
       </a-form-item>
     </a-form>
@@ -207,12 +272,14 @@
     batchFormState,
     batchOnSale,
     conditionState,
+    deleteCashShopItem,
+    batchDeleteCashShopItem,
     getCommodityByCategory,
   } from '@/api/cashShop';
   import CashShopForm from '@/views/game/cashShop/form.vue';
   import { cashShopState } from '@/store/modules/cashShop/type';
   import { getIconUrl } from '@/utils/mapleStoryAPI';
-  import { Message, TableRowSelection } from '@arco-design/web-vue';
+  import { Message, Modal, TableRowSelection } from '@arco-design/web-vue';
 
   const { loading, setLoading } = useLoading(false);
 
@@ -227,6 +294,7 @@
     subId: 0,
     onSale: 1,
     pageNo: 1,
+    pageSize: 10,
     itemId: undefined,
   });
 
@@ -240,6 +308,12 @@
 
   const pageChange = (data: number) => {
     condition.value.pageNo = data;
+    loadData();
+  };
+
+  const pageSizeChange = (data: number) => {
+    condition.value.pageSize = data;
+    condition.value.pageNo = 1;
     loadData();
   };
 
@@ -262,9 +336,19 @@
     loadData();
   };
 
+  const changeDbItemFilter = (data: undefined | boolean) => {
+    condition.value.isDbItem = data;
+    condition.value.pageNo = 1;
+    loadData();
+  };
+
   const cashShopFormRef = ref();
   const editClick = (data: cashShopState) => {
     cashShopFormRef.value.initForm(data);
+  };
+
+  const showAddForm = () => {
+    cashShopFormRef.value.initAddForm();
   };
 
   const batchFormVisible = ref<boolean>(false);
@@ -284,9 +368,13 @@
     batchFormVisible.value = true;
   };
   const batchFormTypeOptions = [
-    { value: '价格' },
-    { value: '数量' },
-    { value: '有效期' },
+    { value: '价格', label: '价格 (Price)' },
+    { value: '数量', label: '数量 (Count)' },
+    { value: '有效期', label: '有效期 (Period)' },
+    { value: '优先级', label: '优先级 (Priority)' },
+    { value: '上架状态', label: '上架状态 (OnSale)' },
+    { value: '性别', label: '性别 (Gender)' },
+    { value: '标签', label: '标签 (Tag)' },
   ];
   const batchFormData = ref<batchFormState>({
     data: [],
@@ -298,8 +386,11 @@
       Message.error('你没有选中任何东西');
       return;
     }
-    if (batchFormData.value.value === undefined) {
-      Message.error('更新值undefined');
+    if (
+      batchFormData.value.type !== '上架状态' &&
+      batchFormData.value.value === undefined
+    ) {
+      Message.error('更新值不能为空');
       return;
     }
 
@@ -311,6 +402,68 @@
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDelete = async (record: cashShopState) => {
+    const action = record.isPureDbItem ? '删除' : '还原';
+    Modal.warning({
+      title: `确认${action}`,
+      content: `确定要${action}商品 SN:${record.sn} 吗？${
+        record.isPureDbItem
+          ? '该操作将永久删除该商品'
+          : '该操作将删除数据库记录，恢复为WZ原值'
+      }`,
+      okText: '确定',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          await deleteCashShopItem(record.sn);
+          Message.success(`${action}成功！`);
+          await loadData();
+        } catch (error) {
+          Message.error(`${action}失败`);
+        }
+      },
+    });
+  };
+
+  const handleBatchDelete = async () => {
+    const selectedSns = selectedKeys.value as number[];
+    const dbItems = tableData.value.filter(
+      (item) => selectedSns.includes(item.sn) && item.isDbItem
+    );
+
+    if (dbItems.length === 0) {
+      Message.warning('请选择需要删除的数据库商品');
+      return;
+    }
+
+    const hasPureDbItems = dbItems.some((item) => item.isPureDbItem);
+    const action = hasPureDbItems ? '删除' : '还原';
+
+    Modal.warning({
+      title: `确认批量${action}`,
+      content: `确定要${action}选中的 ${dbItems.length} 个商品吗？${
+        hasPureDbItems
+          ? '其中包含纯新增商品，该操作将永久删除'
+          : '该操作将删除数据库记录，恢复为WZ原值'
+      }`,
+      okText: '确定',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          setLoading(true);
+          await batchDeleteCashShopItem(dbItems.map((item) => item.sn));
+          Message.success(`批量${action}成功！`);
+          selectedKeys.value = [];
+          await loadData();
+        } catch (error) {
+          Message.error(`批量${action}失败`);
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 </script>
 

@@ -17,6 +17,7 @@ export interface cashShopState {
   subcategoryName?: string;
   sn: number;
   itemId: number;
+  itemName?: string;
   price?: number;
   defaultPrice?: number;
   period?: number;
@@ -49,4 +50,6 @@ export interface cashShopState {
   defaultPBGift?: number;
   packageSn?: number;
   defaultPackageSn?: number;
+  isDbItem?: boolean;
+  isPureDbItem?: boolean;
 }

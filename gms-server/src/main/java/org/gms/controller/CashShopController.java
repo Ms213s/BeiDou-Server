@@ -6,8 +6,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.gms.constants.api.ApiConstant;
 import org.gms.dao.entity.ModifiedCashItemDO;
+import org.gms.model.dto.AddCashShopItemReqDTO;
+import org.gms.model.dto.AddCashShopItemRtnDTO;
 import org.gms.model.dto.CashShopBatchOnSaleReqDTO;
 import org.gms.model.dto.CashShopSearchRtnDTO;
+import org.gms.model.dto.ItemInfoRtnDTO;
 import org.gms.model.dto.ResultBody;
 import org.gms.model.dto.SubmitBody;
 import org.gms.model.pojo.CashCategory;
@@ -66,6 +69,44 @@ public class CashShopController {
     @PostMapping("/" + ApiConstant.LATEST + "/batchOnSale")
     public ResultBody<Object> batchOnSale(@RequestBody SubmitBody<CashShopBatchOnSaleReqDTO> request) {
         cashShopService.batchChangeOnSale(request.getData());
+        return ResultBody.success();
+    }
+
+    @Tag(name = "/cashShop/" + ApiConstant.LATEST)
+    @Operation(summary = "根据物品ID获取物品基础信息")
+    @GetMapping("/" + ApiConstant.LATEST + "/getItemInfoById/{itemId}")
+    public ResultBody<ItemInfoRtnDTO> getItemInfoById(@PathVariable("itemId") Integer itemId) {
+        return ResultBody.success(cashShopService.getItemInfoById(itemId));
+    }
+
+    @Tag(name = "/cashShop/" + ApiConstant.LATEST)
+    @Operation(summary = "添加商品到商城")
+    @PostMapping("/" + ApiConstant.LATEST + "/addCashShopItem")
+    public ResultBody<AddCashShopItemRtnDTO> addCashShopItem(@RequestBody SubmitBody<AddCashShopItemReqDTO> request) {
+        return ResultBody.success(cashShopService.addCashShopItem(request.getData()));
+    }
+
+    @Tag(name = "/cashShop/" + ApiConstant.LATEST)
+    @Operation(summary = "更新商品信息")
+    @PostMapping("/" + ApiConstant.LATEST + "/updateCashShopItem")
+    public ResultBody<Object> updateCashShopItem(@RequestBody SubmitBody<AddCashShopItemReqDTO> request) {
+        cashShopService.updateCashShopItem(request.getData());
+        return ResultBody.success();
+    }
+
+    @Tag(name = "/cashShop/" + ApiConstant.LATEST)
+    @Operation(summary = "删除/还原商品")
+    @PostMapping("/" + ApiConstant.LATEST + "/deleteCashShopItem")
+    public ResultBody<Object> deleteCashShopItem(@RequestBody SubmitBody<Integer> request) {
+        cashShopService.deleteCashShopItem(request.getData());
+        return ResultBody.success();
+    }
+
+    @Tag(name = "/cashShop/" + ApiConstant.LATEST)
+    @Operation(summary = "批量删除/还原商品")
+    @PostMapping("/" + ApiConstant.LATEST + "/batchDeleteCashShopItem")
+    public ResultBody<Object> batchDeleteCashShopItem(@RequestBody SubmitBody<List<Integer>> request) {
+        cashShopService.batchDeleteCashShopItem(request.getData());
         return ResultBody.success();
     }
 }

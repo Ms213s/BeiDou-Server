@@ -49,4 +49,6 @@ public class CashShopSearchRtnDTO {
     private Integer defaultPBGift;
     private Integer packageSn;
     private Integer defaultPackageSn;
+    private Boolean isDbItem;
+    private Boolean isPureDbItem;
 }

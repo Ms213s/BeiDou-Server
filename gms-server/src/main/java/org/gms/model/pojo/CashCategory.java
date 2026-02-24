@@ -16,4 +16,5 @@ public class CashCategory extends BasePageDTO {
     private String subName;
     private Boolean onSale;
     private Integer itemId;
+    private Boolean isDbItem;
 }

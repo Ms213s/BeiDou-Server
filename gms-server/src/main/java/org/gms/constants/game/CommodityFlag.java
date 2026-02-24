@@ -37,12 +37,20 @@ public enum CommodityFlag {
     PB_POINT(1 << 14, 16, "Unknown", (p, n)-> p.writeShort(n.intValue())),
     PB_GIFT(1 << 15, 17, "Unknown", (p, n)-> p.writeShort(n.intValue())),
     PACKAGE_SN(1 << 16, 18, "礼包SN", (p, n)-> {
+        if (n == null) {
+            p.writeByte(0);
+            return;
+        }
         List<Item> itemList = CashShop.CashItemFactory.getPackage(n.intValue());
-        if (itemList.isEmpty()) {
+        if (itemList == null || itemList.isEmpty()) {
             p.writeByte(0);
         } else {
             p.writeByte(itemList.size());
-            itemList.forEach(item -> p.writeInt(item.getSN()));
+            itemList.forEach(item -> {
+                if (item != null) {
+                    p.writeInt(item.getSN());
+                }
+            });
         }
     }),
 
