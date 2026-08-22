@@ -1,20 +1,13 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "java",
-            "name": "Current File",
-            "request": "launch",
-            "mainClass": "${file}"
-        },
-        {
-            "type": "java",
-            "name": "ServerApplication",
-            "request": "launch",
-            "mainClass": "org.gms.ServerApplication",
-            "projectName": "gms-server",
-            // 核心：指定工作目录为 gms-server（替换为你 Trae 中的实际路径）
-            "cwd": "${workspaceFolder}/gms-server",
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "ServerApplication",
+      "request": "launch",
+      "mainClass": "org.gms.ServerApplication",
+      "projectName": "gms-server",
+      "cwd": "${workspaceFolder}/gms-server"
+    }
+  ]
 }

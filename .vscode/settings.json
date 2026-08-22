@@ -1,0 +1,25 @@
+{
+  // ========== JDK 21 配置 ==========
+  "java.jdt.ls.java.home": "D:\\game\\beidou-trea\\temurin-21",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-21",
+      "path": "D:\\game\\beidou-trea\\temurin-21",
+      "default": true
+    }
+  ],
+
+  // ========== Maven 3.9.12 配置 ==========
+  "java.maven.executable.path": "D:\\game\\beidou-trea\\apache-maven-3.9.12\\bin\\mvn.cmd",
+  "maven.executable.path": "D:\\game\\beidou-trea\\apache-maven-3.9.12\\bin\\mvn.cmd",
+  "maven.pomfile.autoUpdateEffectivePOM": true,
+  "maven.terminal.useJavaHome": true,
+
+  // ========== 终端全局环境变量 ==========
+  "terminal.integrated.env.windows": {
+    "NODE_HOME": "D:\\game\\beidou-trea\\node\\versions\\20.20.0",
+    "JAVA_HOME": "D:\\game\\beidou-trea\\temurin-21",
+    "MAVEN_HOME": "D:\\game\\beidou-trea\\apache-maven-3.9.12",
+    "PATH": "${env:PATH};D:\\game\\beidou-trea\\temurin-21\\bin;D:\\game\\beidou-trea\\node\\versions\\20.20.0;D:\\game\\beidou-trea\\apache-maven-3.9.12\\bin"
+  }
+}
